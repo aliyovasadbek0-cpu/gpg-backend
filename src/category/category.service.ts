@@ -5,12 +5,15 @@ import { Category } from './entities/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FileUploadService } from '../common/services/file-upload.service';
+import { Brand } from '../brand/entities/brand.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Brand)
+    private brandRepository: Repository<Brand>,
     private fileUploadService: FileUploadService,
   ) {}
 
@@ -65,7 +68,7 @@ export class CategoryService {
     updateCategoryDto: UpdateCategoryDto,
     images?: any[],
   ): Promise<Category> {
-    const category = await this.findOne(id);
+    const category = await this.findOne(id, false);
 
     Object.assign(category, updateCategoryDto);
 
@@ -82,12 +85,16 @@ export class CategoryService {
   }
 
   async remove(id: number): Promise<void> {
-    const category = await this.findOne(id, true);
+    const category = await this.findOne(id, false);
     
-    // Check if category has brands
-    if (category.brands && category.brands.length > 0) {
+    // Check if category has brands - use direct query to ensure accuracy
+    const brandsCount = await this.brandRepository.count({
+      where: { categoryId: id },
+    });
+    
+    if (brandsCount > 0) {
       throw new ConflictException(
-        `Cannot delete category: it has ${category.brands.length} brand(s). Please delete all brands first.`
+        `Cannot delete category: it has ${brandsCount} brand(s). Please delete all brands first.`
       );
     }
     

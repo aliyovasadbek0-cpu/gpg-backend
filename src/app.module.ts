@@ -32,7 +32,7 @@ import { MigrationService } from './database/migration.service';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Brand, Category]),
+    TypeOrmModule.forFeature([Brand, Category, Product, User]),
     CategoryModule,
     BrandModule,
     ProductModule,

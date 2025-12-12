@@ -3,10 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryService } from './category.service';
 import { CategoryController } from './category.controller';
 import { Category } from './entities/category.entity';
+import { Brand } from '../brand/entities/brand.entity';
 import { FileUploadService } from '../common/services/file-upload.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [TypeOrmModule.forFeature([Category, Brand])],
   controllers: [CategoryController],
   providers: [CategoryService, FileUploadService],
   exports: [CategoryService],
