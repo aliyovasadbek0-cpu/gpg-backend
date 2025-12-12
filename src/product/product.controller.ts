@@ -64,8 +64,9 @@ export class ProductController {
   @Delete(':id')
   // @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.productService.remove(id);
+  async remove(@Param('id', ParseIntPipe) id: number) {
+    await this.productService.remove(id);
+    return { message: 'Product deleted successfully' };
   }
 }
 

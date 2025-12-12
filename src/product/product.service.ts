@@ -102,8 +102,14 @@ export class ProductService {
   async remove(id: number): Promise<void> {
     const product = await this.findOne(id);
     
+    // Delete images if they exist
     if (product.images && product.images.length > 0) {
-      await this.fileUploadService.deleteFiles(product.images);
+      try {
+        await this.fileUploadService.deleteFiles(product.images);
+      } catch (error) {
+        console.error('Error deleting product images:', error);
+        // Continue with entity deletion even if image deletion fails
+      }
     }
 
     await this.productRepository.remove(product);

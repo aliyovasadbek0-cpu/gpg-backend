@@ -88,11 +88,12 @@ export class FileUploadService {
         fs.unlinkSync(fullPath);
         console.log(`Deleted file: ${fullPath}`);
       } else {
-        console.warn(`File not found: ${fullPath}`);
+        console.warn(`File not found: ${fullPath} (this is OK if file was already deleted)`);
       }
     } catch (error) {
+      // Log error but don't throw - file might not exist or already deleted
       console.error(`Error deleting file ${fullPath}:`, error);
-      throw error;
+      // Don't throw - allow deletion to continue even if file deletion fails
     }
   }
 
@@ -108,7 +109,13 @@ export class FileUploadService {
       return;
     }
     for (const filePath of filePaths) {
-      await this.deleteFile(filePath);
+      try {
+        await this.deleteFile(filePath);
+      } catch (error) {
+        // Log error but continue deleting other files
+        console.error(`Failed to delete file ${filePath}:`, error);
+        // Don't throw - continue with other files
+      }
     }
   }
 }

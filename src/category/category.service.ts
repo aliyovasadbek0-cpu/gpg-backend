@@ -42,11 +42,16 @@ export class CategoryService {
     });
   }
 
-  async findOne(id: number): Promise<Category> {
-    const category = await this.categoryRepository.findOne({
+  async findOne(id: number, includeBrands: boolean = true): Promise<Category> {
+    const options: any = {
       where: { id },
-      relations: ['brands'],
-    });
+    };
+    
+    if (includeBrands) {
+      options.relations = ['brands'];
+    }
+    
+    const category = await this.categoryRepository.findOne(options);
 
     if (!category) {
       throw new NotFoundException(`Category with ID ${id} not found`);
@@ -77,10 +82,23 @@ export class CategoryService {
   }
 
   async remove(id: number): Promise<void> {
-    const category = await this.findOne(id);
+    const category = await this.findOne(id, true);
     
+    // Check if category has brands
+    if (category.brands && category.brands.length > 0) {
+      throw new ConflictException(
+        `Cannot delete category: it has ${category.brands.length} brand(s). Please delete all brands first.`
+      );
+    }
+    
+    // Delete images if they exist
     if (category.images && category.images.length > 0) {
-      await this.fileUploadService.deleteFiles(category.images);
+      try {
+        await this.fileUploadService.deleteFiles(category.images);
+      } catch (error) {
+        console.error('Error deleting category images:', error);
+        // Continue with entity deletion even if image deletion fails
+      }
     }
 
     await this.categoryRepository.remove(category);

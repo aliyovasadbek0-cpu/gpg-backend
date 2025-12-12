@@ -55,11 +55,17 @@ export class BrandService {
     });
   }
 
-  async findOne(id: number): Promise<Brand> {
-    const brand = await this.brandRepository.findOne({
+  async findOne(id: number, includeProducts: boolean = true): Promise<Brand> {
+    const options: any = {
       where: { id },
-      relations: ['category', 'products'],
-    });
+      relations: ['category'],
+    };
+    
+    if (includeProducts) {
+      options.relations.push('products');
+    }
+    
+    const brand = await this.brandRepository.findOne(options);
 
     if (!brand) {
       throw new NotFoundException(`Brand with ID ${id} not found`);
@@ -95,10 +101,23 @@ export class BrandService {
   }
 
   async remove(id: number): Promise<void> {
-    const brand = await this.findOne(id);
+    const brand = await this.findOne(id, true);
     
+    // Check if brand has products
+    if (brand.products && brand.products.length > 0) {
+      throw new ConflictException(
+        `Cannot delete brand: it has ${brand.products.length} product(s). Please delete all products first.`
+      );
+    }
+    
+    // Delete images if they exist
     if (brand.images && brand.images.length > 0) {
-      await this.fileUploadService.deleteFiles(brand.images);
+      try {
+        await this.fileUploadService.deleteFiles(brand.images);
+      } catch (error) {
+        console.error('Error deleting brand images:', error);
+        // Continue with entity deletion even if image deletion fails
+      }
     }
 
     await this.brandRepository.remove(brand);
