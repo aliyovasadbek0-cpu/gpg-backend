@@ -1,4 +1,5 @@
 import { IsString, IsNumber, IsOptional, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateProductDto {
   @IsString()
@@ -17,12 +18,9 @@ export class CreateProductDto {
   @IsOptional()
   descriptionEn?: string;
 
+  @Type(() => Number)
   @IsNumber()
   @IsNotEmpty()
   brandId: number;
-
-  @IsNumber()
-  @IsOptional()
-  price?: number;
 }
 

@@ -88,9 +88,7 @@ Form-data bilan `image` faylini yuborish kerak.
   "nameEn": "ATLANT Yellow 5kg",
   "descriptionRu": "Описание продукта",
   "descriptionEn": "Product description",
-  "categoryId": 1,
-  "brandId": 1,
-  "price": 150000
+  "brandId": 1
 }
 ```
 Form-data bilan `image` faylini yuborish kerak.
@@ -108,7 +106,7 @@ Rasmlarni ko'rish uchun: `http://localhost:3000/upload/categories/filename.jpg`
 
 - **categories** - Kategoriyalar (nameRu, nameEn, descriptionRu, descriptionEn, image)
 - **brands** - Brendlar (name, nameRu, nameEn, image)
-- **products** - Mahsulotlar (nameRu, nameEn, descriptionRu, descriptionEn, image, price, categoryId, brandId)
+- **products** - Mahsulotlar (nameRu, nameEn, descriptionRu, descriptionEn, image, brandId)
 
 ## Eslatmalar
 

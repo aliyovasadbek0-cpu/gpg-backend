@@ -31,9 +31,6 @@ export class Product {
   @Column({ type: 'text', array: true, default: [] })
   images: string[];
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
-  price: number;
-
   @ManyToOne(() => Brand, (brand) => brand.products, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'brandId' })
   brand: Brand;
