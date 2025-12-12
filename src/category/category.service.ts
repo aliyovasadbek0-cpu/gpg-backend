@@ -37,43 +37,22 @@ export class CategoryService {
 
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find({
-      relations: ['products'],
+      relations: ['brands'],
       order: { id: 'ASC' },
     });
   }
 
-  async findOne(id: number): Promise<any> {
+  async findOne(id: number): Promise<Category> {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      relations: ['products', 'products.brand'],
+      relations: ['brands'],
     });
 
     if (!category) {
       throw new NotFoundException(`Category with ID ${id} not found`);
     }
 
-    // Extract unique brands from products
-    const brandsMap = new Map();
-    if (category.products) {
-      category.products.forEach((product) => {
-        if (product.brand && !brandsMap.has(product.brand.id)) {
-          brandsMap.set(product.brand.id, product.brand);
-        }
-      });
-    }
-
-    // Return category with brands instead of products
-    return {
-      id: category.id,
-      nameRu: category.nameRu,
-      nameEn: category.nameEn,
-      descriptionRu: category.descriptionRu,
-      descriptionEn: category.descriptionEn,
-      images: category.images,
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-      brands: Array.from(brandsMap.values()),
-    };
+    return category;
   }
 
   async update(

@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Product } from '../../product/entities/product.entity';
+import { Brand } from '../../brand/entities/brand.entity';
 
 @Entity('categories')
 export class Category {
@@ -28,8 +28,8 @@ export class Category {
   @Column({ type: 'text', array: true, default: [] })
   images: string[];
 
-  @OneToMany(() => Product, (product) => product.category)
-  products: Product[];
+  @OneToMany(() => Brand, (brand) => brand.category)
+  brands: Brand[];
 
   @CreateDateColumn()
   createdAt: Date;

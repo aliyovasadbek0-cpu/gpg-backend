@@ -5,7 +5,6 @@ import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { FileUploadService } from '../common/services/file-upload.service';
-import { CategoryService } from '../category/category.service';
 import { BrandService } from '../brand/brand.service';
 
 @Injectable()
@@ -14,30 +13,24 @@ export class ProductService {
     @InjectRepository(Product)
     private productRepository: Repository<Product>,
     private fileUploadService: FileUploadService,
-    private categoryService: CategoryService,
     private brandService: BrandService,
   ) {}
 
   async create(createProductDto: CreateProductDto, images?: any[]): Promise<Product> {
-    // Verify category exists
-    await this.categoryService.findOne(createProductDto.categoryId);
+    // Verify brand exists
+    await this.brandService.findOne(createProductDto.brandId);
 
-    // Verify brand exists if provided
-    if (createProductDto.brandId) {
-      await this.brandService.findOne(createProductDto.brandId);
-    }
-
-    // Check if product with same nameRu and categoryId already exists
+    // Check if product with same nameRu and brandId already exists
     const existingProduct = await this.productRepository.findOne({
       where: {
         nameRu: createProductDto.nameRu,
-        categoryId: createProductDto.categoryId,
+        brandId: createProductDto.brandId,
       },
     });
 
     if (existingProduct) {
       throw new ConflictException(
-        `Product with name "${createProductDto.nameRu}" already exists in this category`,
+        `Product with name "${createProductDto.nameRu}" already exists in this brand`,
       );
     }
 
@@ -54,15 +47,7 @@ export class ProductService {
 
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
-      relations: ['category', 'brand'],
-      order: { id: 'DESC' },
-    });
-  }
-
-  async findByCategory(categoryId: number): Promise<Product[]> {
-    return this.productRepository.find({
-      where: { categoryId },
-      relations: ['category', 'brand'],
+      relations: ['brand', 'brand.category'],
       order: { id: 'DESC' },
     });
   }
@@ -70,7 +55,7 @@ export class ProductService {
   async findByBrand(brandId: number): Promise<Product[]> {
     return this.productRepository.find({
       where: { brandId },
-      relations: ['category', 'brand'],
+      relations: ['brand', 'brand.category'],
       order: { id: 'DESC' },
     });
   }
@@ -78,7 +63,7 @@ export class ProductService {
   async findOne(id: number): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['category', 'brand'],
+      relations: ['brand', 'brand.category'],
     });
 
     if (!product) {
@@ -94,11 +79,6 @@ export class ProductService {
     images?: any[],
   ): Promise<Product> {
     const product = await this.findOne(id);
-
-    // Verify category exists if being updated
-    if (updateProductDto.categoryId) {
-      await this.categoryService.findOne(updateProductDto.categoryId);
-    }
 
     // Verify brand exists if being updated
     if (updateProductDto.brandId) {

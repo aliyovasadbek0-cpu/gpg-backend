@@ -37,10 +37,7 @@ export class ProductController {
   }
 
   @Get()
-  findAll(@Query('categoryId') categoryId?: string, @Query('brandId') brandId?: string) {
-    if (categoryId) {
-      return this.productService.findByCategory(+categoryId);
-    }
+  findAll(@Query('brandId') brandId?: string) {
     if (brandId) {
       return this.productService.findByBrand(+brandId);
     }

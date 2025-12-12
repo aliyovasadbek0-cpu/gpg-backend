@@ -3,10 +3,13 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Product } from '../../product/entities/product.entity';
+import { Category } from '../../category/entities/category.entity';
 
 @Entity('brands')
 export class Brand {
@@ -24,6 +27,13 @@ export class Brand {
 
   @Column({ type: 'text', array: true, default: [] })
   images: string[];
+
+  @ManyToOne(() => Category, (category) => category.brands, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
+
+  @Column()
+  categoryId: number;
 
   @OneToMany(() => Product, (product) => product.brand)
   products: Product[];

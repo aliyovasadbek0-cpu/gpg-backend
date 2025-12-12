@@ -19,11 +19,7 @@ export class CreateProductDto {
 
   @IsNumber()
   @IsNotEmpty()
-  categoryId: number;
-
-  @IsNumber()
-  @IsOptional()
-  brandId?: number;
+  brandId: number;
 
   @IsNumber()
   @IsOptional()

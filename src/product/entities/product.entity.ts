@@ -8,11 +8,10 @@ import {
   UpdateDateColumn,
   Unique,
 } from 'typeorm';
-import { Category } from '../../category/entities/category.entity';
 import { Brand } from '../../brand/entities/brand.entity';
 
 @Entity('products')
-@Unique(['nameRu', 'categoryId'])
+@Unique(['nameRu', 'brandId'])
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
@@ -35,18 +34,11 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price: number;
 
-  @ManyToOne(() => Category, (category) => category.products, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'categoryId' })
-  category: Category;
-
-  @Column()
-  categoryId: number;
-
-  @ManyToOne(() => Brand, (brand) => brand.products, { onDelete: 'SET NULL', nullable: true })
+  @ManyToOne(() => Brand, (brand) => brand.products, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'brandId' })
   brand: Brand;
 
-  @Column({ nullable: true })
+  @Column()
   brandId: number;
 
   @CreateDateColumn()

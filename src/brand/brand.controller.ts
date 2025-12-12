@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   ParseIntPipe,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -36,7 +37,10 @@ export class BrandController {
   }
 
   @Get()
-  findAll() {
+  findAll(@Query('categoryId') categoryId?: string) {
+    if (categoryId) {
+      return this.brandService.findByCategory(+categoryId);
+    }
     return this.brandService.findAll();
   }
 

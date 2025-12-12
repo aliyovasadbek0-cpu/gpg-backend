@@ -4,13 +4,11 @@ import { ProductService } from './product.service';
 import { ProductController } from './product.controller';
 import { Product } from './entities/product.entity';
 import { FileUploadService } from '../common/services/file-upload.service';
-import { CategoryModule } from '../category/category.module';
 import { BrandModule } from '../brand/brand.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Product]),
-    CategoryModule,
     BrandModule,
   ],
   controllers: [ProductController],

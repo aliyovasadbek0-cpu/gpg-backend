@@ -5,6 +5,7 @@ import { Brand } from './entities/brand.entity';
 import { CreateBrandDto } from './dto/create-brand.dto';
 import { UpdateBrandDto } from './dto/update-brand.dto';
 import { FileUploadService } from '../common/services/file-upload.service';
+import { CategoryService } from '../category/category.service';
 
 @Injectable()
 export class BrandService {
@@ -12,9 +13,13 @@ export class BrandService {
     @InjectRepository(Brand)
     private brandRepository: Repository<Brand>,
     private fileUploadService: FileUploadService,
+    private categoryService: CategoryService,
   ) {}
 
   async create(createBrandDto: CreateBrandDto, images?: any[]): Promise<Brand> {
+    // Verify category exists
+    await this.categoryService.findOne(createBrandDto.categoryId);
+
     // Check if brand with same name already exists
     const existingBrand = await this.brandRepository.findOne({
       where: { name: createBrandDto.name },
@@ -37,7 +42,15 @@ export class BrandService {
 
   async findAll(): Promise<Brand[]> {
     return this.brandRepository.find({
-      relations: ['products'],
+      relations: ['category', 'products'],
+      order: { id: 'ASC' },
+    });
+  }
+
+  async findByCategory(categoryId: number): Promise<Brand[]> {
+    return this.brandRepository.find({
+      where: { categoryId },
+      relations: ['category', 'products'],
       order: { id: 'ASC' },
     });
   }
@@ -45,7 +58,7 @@ export class BrandService {
   async findOne(id: number): Promise<Brand> {
     const brand = await this.brandRepository.findOne({
       where: { id },
-      relations: ['products', 'products.category'],
+      relations: ['category', 'products'],
     });
 
     if (!brand) {
@@ -61,6 +74,11 @@ export class BrandService {
     images?: any[],
   ): Promise<Brand> {
     const brand = await this.findOne(id);
+
+    // Verify category exists if being updated
+    if (updateBrandDto.categoryId) {
+      await this.categoryService.findOne(updateBrandDto.categoryId);
+    }
 
     Object.assign(brand, updateBrandDto);
 
