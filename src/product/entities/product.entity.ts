@@ -34,11 +34,11 @@ export class Product {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   price: number;
 
-  @ManyToOne(() => Brand, (brand) => brand.products, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Brand, (brand) => brand.products, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'brandId' })
   brand: Brand;
 
-  @Column()
+  @Column({ nullable: true })
   brandId: number;
 
   @CreateDateColumn()

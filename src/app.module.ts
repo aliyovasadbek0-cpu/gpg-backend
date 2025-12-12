@@ -10,6 +10,7 @@ import { Product } from './product/entities/product.entity';
 import { User } from './user/entities/user.entity';
 import { HealthController } from './health/health.controller';
 import { AuthModule } from './auth/auth.module';
+import { MigrationService } from './database/migration.service';
 
 @Module({
   imports: [
@@ -31,12 +32,14 @@ import { AuthModule } from './auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([Brand, Category]),
     CategoryModule,
     BrandModule,
     ProductModule,
     AuthModule,
   ],
   controllers: [HealthController],
+  providers: [MigrationService],
 })
 export class AppModule {}
 

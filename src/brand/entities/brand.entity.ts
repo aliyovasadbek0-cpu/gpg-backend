@@ -28,11 +28,11 @@ export class Brand {
   @Column({ type: 'text', array: true, default: [] })
   images: string[];
 
-  @ManyToOne(() => Category, (category) => category.brands, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Category, (category) => category.brands, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'categoryId' })
   category: Category;
 
-  @Column()
+  @Column({ nullable: true })
   categoryId: number;
 
   @OneToMany(() => Product, (product) => product.brand)
