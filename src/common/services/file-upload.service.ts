@@ -49,18 +49,50 @@ export class FileUploadService {
   }
 
   async deleteFile(filePathOrUrl: string): Promise<void> {
+    if (!filePathOrUrl) {
+      return;
+    }
+
     // Extract filename from URL if it's a full URL
     let fileName = filePathOrUrl;
     if (filePathOrUrl.startsWith('http://') || filePathOrUrl.startsWith('https://')) {
-      // Extract filename from URL (e.g., http://localhost:3000/1234567890-123456789.jpg -> 1234567890-123456789.jpg)
-      const urlParts = filePathOrUrl.split('/');
-      fileName = urlParts[urlParts.length - 1];
+      try {
+        // Extract filename from URL
+        // Examples:
+        // http://localhost:3000/1234567890-123456789.jpg -> 1234567890-123456789.jpg
+        // https://gpg-backend-vgrz.onrender.com/1234567890-123456789.jpg -> 1234567890-123456789.jpg
+        // http://localhost:3000/upload/products/1234567890-123456789.jpg -> 1234567890-123456789.jpg
+        const urlObj = new URL(filePathOrUrl);
+        const pathname = urlObj.pathname;
+        // Remove leading slash and any subfolder paths
+        fileName = pathname.split('/').pop() || pathname.replace(/^\/+/, '');
+      } catch (error) {
+        // Fallback: simple split if URL parsing fails
+        const urlParts = filePathOrUrl.split('/');
+        fileName = urlParts[urlParts.length - 1];
+      }
+    } else if (filePathOrUrl.startsWith('/')) {
+      // Handle relative paths like /upload/products/filename.jpg or /filename.jpg
+      fileName = filePathOrUrl.split('/').pop() || filePathOrUrl.replace(/^\/+/, '');
     }
     
+    if (!fileName) {
+      console.warn(`Cannot extract filename from: ${filePathOrUrl}`);
+      return;
+    }
+
     const fullPath = path.join(this.uploadPath, fileName);
     
-    if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
+    try {
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath);
+        console.log(`Deleted file: ${fullPath}`);
+      } else {
+        console.warn(`File not found: ${fullPath}`);
+      }
+    } catch (error) {
+      console.error(`Error deleting file ${fullPath}:`, error);
+      throw error;
     }
   }
 
