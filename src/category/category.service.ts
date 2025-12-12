@@ -6,6 +6,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { FileUploadService } from '../common/services/file-upload.service';
 import { Brand } from '../brand/entities/brand.entity';
+import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
@@ -14,6 +15,8 @@ export class CategoryService {
     private categoryRepository: Repository<Category>,
     @InjectRepository(Brand)
     private brandRepository: Repository<Brand>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
     private fileUploadService: FileUploadService,
   ) {}
 
@@ -87,18 +90,46 @@ export class CategoryService {
   async remove(id: number): Promise<void> {
     const category = await this.findOne(id, false);
     
-    // Check if category has brands - use direct query to ensure accuracy
-    const brandsCount = await this.brandRepository.count({
+    // Get all brands for this category
+    const brands = await this.brandRepository.find({
       where: { categoryId: id },
+      relations: ['products'],
     });
     
-    if (brandsCount > 0) {
-      throw new ConflictException(
-        `Cannot delete category: it has ${brandsCount} brand(s). Please delete all brands first.`
-      );
+    // Delete all brands and their products (cascade delete)
+    for (const brand of brands) {
+      // Get all products for this brand
+      const products = await this.productRepository.find({
+        where: { brandId: brand.id },
+      });
+      
+      // Delete brand's products first
+      for (const product of products) {
+        // Delete product images
+        if (product.images && product.images.length > 0) {
+          try {
+            await this.fileUploadService.deleteFiles(product.images);
+          } catch (error) {
+            console.error('Error deleting product images:', error);
+          }
+        }
+        await this.productRepository.remove(product);
+      }
+      
+      // Delete brand images
+      if (brand.images && brand.images.length > 0) {
+        try {
+          await this.fileUploadService.deleteFiles(brand.images);
+        } catch (error) {
+          console.error('Error deleting brand images:', error);
+        }
+      }
+      
+      // Delete brand
+      await this.brandRepository.remove(brand);
     }
     
-    // Delete images if they exist
+    // Delete category images if they exist
     if (category.images && category.images.length > 0) {
       try {
         await this.fileUploadService.deleteFiles(category.images);

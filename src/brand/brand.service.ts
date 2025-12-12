@@ -106,18 +106,25 @@ export class BrandService {
   async remove(id: number): Promise<void> {
     const brand = await this.findOne(id, false);
     
-    // Check if brand has products - use direct query to ensure accuracy
-    const productsCount = await this.productRepository.count({
+    // Get all products for this brand
+    const products = await this.productRepository.find({
       where: { brandId: id },
     });
     
-    if (productsCount > 0) {
-      throw new ConflictException(
-        `Cannot delete brand: it has ${productsCount} product(s). Please delete all products first.`
-      );
+    // Delete all products (cascade delete)
+    for (const product of products) {
+      // Delete product images
+      if (product.images && product.images.length > 0) {
+        try {
+          await this.fileUploadService.deleteFiles(product.images);
+        } catch (error) {
+          console.error('Error deleting product images:', error);
+        }
+      }
+      await this.productRepository.remove(product);
     }
     
-    // Delete images if they exist
+    // Delete brand images if they exist
     if (brand.images && brand.images.length > 0) {
       try {
         await this.fileUploadService.deleteFiles(brand.images);
